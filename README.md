@@ -1890,5 +1890,31 @@ endmodule
 ## Edgecapture [Edge capture register]
 
 ```verilog
-mod
+module top_module (
+    input wire clk,           // Clock input
+    input wire reset,           // Synchronous reset
+    input wire [31:0] in,     // 32-bit input vector
+    output reg [31:0] out     // 32-bit output vector - captures falling edges
+);
+
+    // Register to store previous input value for edge detection
+    reg [31:0] in_prev;
+
+    always @(posedge clk) begin
+        if (reset) begin
+            // Synchronous reset - clear all outputs and previous input
+            out <= 32'b0;
+            in_prev <= in;
+        end
+        else begin
+            // Store current input for next cycle's edge detection
+            in_prev <= in;
+            
+            // For each bit: set output if falling edge detected (1->0 transition)
+            // Once set, keep output high until reset
+            out <= out | (in_prev & ~in);
+        end
+    end
+
+endmodule
 ```
